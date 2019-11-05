@@ -18,14 +18,17 @@ int Process::Pid() {
   return this->pid; }
 
 // TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
+float Process::CpuUtilization() {
+  float x=LinuxParser::ActiveJiffies(this->pid);
+  float y=LinuxParser::Jiffies();
+  return x/y; }
 
 // TODO: Return the command that generated this process
 string Process::Command() { 
      return LinuxParser::Command(this->pid);}
 
 // TODO: Return this process's memory utilization
-string Process::Ram() { return std::to_string(LinuxParser::ActiveJiffies(this->pid)); }
+string Process::Ram() { return  LinuxParser::Ram(pid); }
 
 // TODO: Return the user (name) that generated this process
 string Process::User() {

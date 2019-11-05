@@ -101,7 +101,10 @@ long LinuxParser::UpTime() {
   return long(upTim1+upTim2); }
 
 // TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
+long LinuxParser::Jiffies() { 
+   
+                                   return ActiveJiffies()+IdleJiffies(); }
+
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
@@ -127,10 +130,31 @@ return (size/1000);}
 
 
 // TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
+long LinuxParser::ActiveJiffies() { 
+  long user,nice,system1,idle,iowait,irq,softirq,steal;
+  string CPU,line;
+  std::ifstream stream(kProcDirectory + kStatFilename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+   std::istringstream linestream(line);
+          linestream >>CPU>>user>>nice>>system1>>idle>>iowait>>irq>>softirq>>steal;
+    
+  }
+  
+                                   return (user+nice+system1+irq+softirq+steal);}
 
 // TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
+long LinuxParser::IdleJiffies() {   
+  long user,nice,system1,idle,iowait,irq,softirq,steal;
+  string CPU,line;
+  std::ifstream stream(kProcDirectory + kStatFilename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+   std::istringstream linestream(line);
+          linestream >>CPU>>user>>nice>>system1>>idle>>iowait>>irq>>softirq>>steal;
+    
+  }
+        return idle+iowait; }
 
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() { 
@@ -199,7 +223,7 @@ string LinuxParser::Command(int pid) {
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Ram(int pid) { return  std::to_string(ActiveJiffies(pid)); }
 
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
