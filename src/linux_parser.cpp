@@ -58,7 +58,7 @@ vector<int> LinuxParser::Pids() {
       string filename(file->d_name);
       if (std::all_of(filename.begin(), filename.end(), isdigit)) {
         int pid = stoi(filename);
-        pids.push_back(pid);
+        pids.emplace_back(pid);
       }
     }
   }
@@ -101,7 +101,7 @@ long LinuxParser::UpTime() {
   return long(upTim1+upTim2); }
 
 // TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { 
+float LinuxParser::Jiffies() { 
    
                                    return ActiveJiffies()+IdleJiffies(); }
 
@@ -109,39 +109,53 @@ long LinuxParser::Jiffies() {
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::ActiveJiffies(int pid) { 
-  	
-  long size;
-  std::string process;
-  std::string pidS=std::to_string(pid),line;
-    std::ifstream stream(kProcDirectory+pidS+kStatusFilename);
- if (stream.is_open()) {
-        while (std::getline(stream, line)) {
-      std::istringstream linestream(line);
-          linestream >>process;
-      if(process=="VmSize:"){
-        linestream>>size;
-      break;
+
+    std::string pidS=std::to_string(pid);
+int index=0;
+  vector<int> myVector;
+  long space;
+  string line;
+    std::ifstream stream(kProcDirectory+pidS+kStatFilename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+   std::istringstream linestream(line);
+    while (linestream >> space ) {
+
+      if(index ==22){
+        break;}
+
+     
+        index++;
       }
-    }
   }
 
-return (size/1000);}
+  return space;}
 
 
 
 // TODO: Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() { 
-  long user,nice,system1,idle,iowait,irq,softirq,steal;
-  string CPU,line;
+  int index=0;
+  vector<int> myVector;
+  string space;
+  string line;
   std::ifstream stream(kProcDirectory + kStatFilename);
   if (stream.is_open()) {
     std::getline(stream, line);
    std::istringstream linestream(line);
-          linestream >>CPU>>user>>nice>>system1>>idle>>iowait>>irq>>softirq>>steal;
+    while (linestream >> space ) {
+      if(index ==10){
+        break;}
+      if(index>0){
+        myVector.push_back(atol(space.c_str()));
+      }
+        index++;
+      }
+    }
     
-  }
   
-                                   return (user+nice+system1+irq+softirq+steal);}
+  long total =myVector[0]+myVector[1]+myVector[2]+myVector[5]+myVector[6]+myVector[7];
+  return total;}
 
 // TODO: Read and return the number of idle jiffies for the system
 long LinuxParser::IdleJiffies() {   
@@ -223,7 +237,26 @@ string LinuxParser::Command(int pid) {
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid) { return  std::to_string(ActiveJiffies(pid)); }
+string LinuxParser::Ram(int pid) {  
+  double size;
+  std::string process;
+  std::string pidS=std::to_string(pid),line;
+    std::ifstream stream(kProcDirectory+pidS+kStatusFilename);
+ if (stream.is_open()) {
+        while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+          linestream >>process;
+      if(process=="VmData:"){ //VmData  instead of Vmsize as Udacity greader said it's better
+        linestream>>size;
+      break;
+      }
+    }
+  }
+  size/=1000.0;
+string size1=std::to_string(size);
+  
+size1=size1.substr(0,size1.find(".")+3);  
+return	size1; }
 
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
@@ -260,7 +293,7 @@ string LinuxParser::User(int pid) {
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid) {  
+float LinuxParser::UpTime(int pid) {  
   string space;
   int index=1;
     // long one,two,three,four,five;
@@ -278,7 +311,6 @@ long LinuxParser::UpTime(int pid) {
     }
       // std
       
-      long res=atol(space.c_str())/(sysconf(_SC_CLK_TCK)*1.0);
-//   		long res=space/(sysconf(_SC_CLK_TCK)*1.0);
-      // std::cerr<<line;
-     return long(res); } 
+      float res=atol(space.c_str())/(sysconf(_SC_CLK_TCK)*1.0);
+
+     return float(res); } 

@@ -5,6 +5,9 @@
 #include <vector>
 #include<iostream>
 
+#include <unistd.h>
+
+
 #include "linux_parser.h"
 #include "process.h"
 #include "format.h"
@@ -20,8 +23,9 @@ int Process::Pid() {
 // TODO: Return this process's CPU utilization
 float Process::CpuUtilization() {
   float x=LinuxParser::ActiveJiffies(this->pid);
-  float y=LinuxParser::Jiffies();
-  return x/y; }
+  float y=LinuxParser::UpTime(this->pid);
+  float total=x/y;
+  return total; }
 
 // TODO: Return the command that generated this process
 string Process::Command() { 
@@ -35,7 +39,7 @@ string Process::User() {
   return LinuxParser::User(this->pid); }
 
 // TODO: Return the age of this process (in seconds)
-long int Process::UpTime() { 
+float  Process::UpTime() { 
   return LinuxParser::UpTime(this->pid); }
 
 // TODO: Overload the "less than" comparison operator for Process objects
